@@ -1,13 +1,13 @@
 import numpy as np
 from sklearn import datasets, linear_model
-from linear_regression import linear_regression
+from linearregression import LinearRegression
 
 # Load the diabetes dataset
 diabetes_X, diabetes_y = datasets.load_diabetes(return_X_y=True)
 diabetes_X = diabetes_X[:, np.newaxis, 2]
 
-regr = linear_model.LinearRegression()
-# regr = linear_regression()
+regr = linear_model.LinearRegression()  # sklearn impl
+# regr = LinearRegression()  #  manual impl
 
 regr.fit(diabetes_X, diabetes_y)
 
