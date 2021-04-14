@@ -16,27 +16,47 @@ public class LinearRegressionModel
         Slope = slope;
     }
 
-    public static LinearRegressionModel BuildModel(ICollection<(double x, double y)> data)
+    public static LinearRegressionModel BuildModel(ICollection<(double x, double y)> data, int turns = 10)
     {
-        (double x, double y) sums = data
-            .Aggregate(
-                (0d, 0d),
-                (m, d) => (m.Item1 + d.x, m.Item2 + d.y));
+        double intercept = 1;
+        double slope = 1;
 
-        (double x, double y) means = (sums.x / data.Count, sums.y / data.Count);
+        var currentTurn = 0;
+        int direction = 1;
+        double step = 1;
 
-        //Σ(X - X̄)²
-        var ssX = data
-            .Select(d => (d.x - means.x) * (d.x - means.x))
-            .Sum();
+        double currentSsr = CalculateSsr(intercept, slope, data);
+        double previousSsr;
 
-        //Σ(X - X̄)(Y - Y̅)
-        var sCo = data
-            .Select(d => (d.x - means.x) * (d.y - means.y))
-            .Sum();
+        //Calculate intercept
+        while (currentTurn <= turns){
+            intercept += direction*step;
+            previousSsr = currentSsr;
+            currentSsr = CalculateSsr(intercept, slope, data);
 
-        var slope = sCo / ssX;
-        var intercept = means.y - (slope * means.x);
+            if (currentSsr > previousSsr){
+                direction *= -1;
+                step /= 2;
+                currentTurn++;
+            }
+        }
+
+        currentTurn = 0;
+        direction = 1;
+        step = 1;
+
+        //Calculate slope
+        while (currentTurn <= turns){
+            slope += direction*step;
+            previousSsr = currentSsr;
+            currentSsr = CalculateSsr(intercept, slope, data);
+
+            if (currentSsr > previousSsr){
+                direction *= -1;
+                step /= 2;
+                currentTurn++;
+            }
+        }
 
         return new LinearRegressionModel(intercept, slope);
     }
@@ -53,5 +73,18 @@ public class LinearRegressionModel
         {
             yield return Predict(enumerator.Current);
         }
+    }
+
+    private static double CalculateSsr(double i, double s, ICollection<(double x, double y)> data){
+        var squareResiduals = new List<double>();
+
+        foreach((double x, double y) in data){
+            var predicted = (s*x + i);
+            var actual = y;
+            var squareResidual = Math.Pow(predicted-actual, 2);
+            squareResiduals.Add(squareResidual);
+        }
+
+        return squareResiduals.Sum();
     }
 }

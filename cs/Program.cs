@@ -13,4 +13,5 @@ var parsedData = data.Select(d =>
 }).ToList();
 
 var model = LinearRegressionModel.BuildModel(parsedData);
-Console.WriteLine($"Prediction for 0.015: {model.Predict(0.015)}");
+System.Console.WriteLine($"{model.Intercept} {model.Slope}");
+Console.WriteLine($"Prediction for 0.015: {model.Predict(0.015), 10}");
